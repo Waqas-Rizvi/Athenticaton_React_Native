@@ -7,7 +7,7 @@ export const Login = ({ navigation }) => {
     const [email, setemail] = useState("")
     const [password, setpassword] = useState("")
 
-    const screen = () => navigation.navigate("Home")
+    const screen = () => navigation.navigate("Camera")
 
     const login = () => {
 

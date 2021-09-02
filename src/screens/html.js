@@ -1,22 +1,27 @@
 import React, { useState } from 'react'
-import { View, Text, ImageBackground, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, ImageBackground, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import { useSelector } from 'react-redux'
-
 
 export const html = ({ navigation }) => {
     let state = useSelector(state => state)
     let total = state.htmlquestions.length
-    const back = () => navigation.navigate("Home")
     const [result, setresult] = useState(false)
     const [quesno, setquesno] = useState(0)
+    const [selectedvalue, setselectedvalue] = useState("")
+    const backhome = () => {
+        navigation.navigate("Home")
+        setquesno(0)
+        setresult(false)
+    }
     const [score, setscore] = useState(0)
     const next = () => setquesno(quesno + 1)
-    const check = (e) => {
-        let selectval = e
-        let correctval = state.htmlquestions[quesno].correctAns
+    const back = () => setquesno(quesno - 1)
+    let permarks = 3
 
-        if (selectval == correctval) {
-            setscore(score + 1)
+    const check = () => {
+        let correctval = state.htmlquestions[quesno].correctAns
+        if (selectedvalue == correctval) {
+            setscore(score + permarks)
         }
 
         if (quesno + 1 != state.htmlquestions.length) {
@@ -25,7 +30,22 @@ export const html = ({ navigation }) => {
             setresult(true)
         }
     }
-    let percentage = score / total * 100
+
+    const backk = () => {
+        if (quesno == 0) {
+            backhome()
+        } else {
+            setscore(score - permarks)
+            back()
+        }
+    }
+
+    const optselect = (e) => {
+        setselectedvalue(e)
+    }
+
+    let percentage = score / (total * permarks) * 100
+    let roundpercentage = Math.round(percentage)
 
     return (
 
@@ -34,12 +54,13 @@ export const html = ({ navigation }) => {
                 {result ?
                     <View style={styles.background}>
                         <Text style={styles.resultbtn}>Result</Text>
+                        <Image style={{height: 150, width: 150}} source={{uri: state.pic}}/>
                         <Text style={styles.result}>Total Questions: {total}</Text>
-                        <Text style={styles.result}>Marks: {score}/{total}</Text>
-                        <Text style={styles.result}>Percentage: {percentage}%</Text>
+                        <Text style={styles.result}>Marks: {score}/{total * permarks}</Text>
+                        <Text style={styles.result}>Percentage: {roundpercentage}%</Text>
                         <Text style={styles.result}>{percentage < 40 ? "Fail" : "Pass"}</Text>
                         <TouchableOpacity>
-                            <Text onPress={back} style={styles.backbutton}>Back to Home</Text>
+                            <Text onPress={backhome} style={styles.backbutton}>Back to Home</Text>
                         </TouchableOpacity>
                     </View>
                     :
@@ -51,16 +72,27 @@ export const html = ({ navigation }) => {
                             <Text style={styles.question}>{state.htmlquestions[quesno].question}</Text>
                         </View>
                         {state.htmlquestions[quesno].options.map((e, i) => {
+                            let color = ""
+                            let background = ""
+                            if (selectedvalue != e) {
+                                color = "#c40a0d"
+                                background = "white"
+                            } else {
+                                color = "white"
+                                background = "#c40a0d"
+                            }
+
                             return (
-                                <View>
-                                    <TouchableOpacity key={i}>
-                                        <Text onPress={() => check(e)} style={styles.button}>{e}</Text>
+                                <View key={i}>
+                                    <TouchableOpacity>
+                                        <Text onPress={() => optselect(e)} style={[styles.button, { backgroundColor: background, color: color }]}>{e}</Text>
                                     </TouchableOpacity>
                                 </View>
                             )
                         })}
                         <View>
-                            <TouchableOpacity>
+                            <TouchableOpacity style={{ flexDirection: "row" }}>
+                                <Text onPress={backk} style={styles.nextbutton}>Back</Text>
                                 <Text onPress={check} style={styles.nextbutton}>Next</Text>
                             </TouchableOpacity>
                         </View>
@@ -91,8 +123,6 @@ const styles = StyleSheet.create({
     },
     button: {
         fontSize: 20,
-        backgroundColor: "#c40a0d",
-        color: "white",
         padding: 15,
         margin: 10,
         borderRadius: 50,
@@ -118,7 +148,7 @@ const styles = StyleSheet.create({
         width: 170,
         textAlign: "center",
         fontWeight: "bold",
-        marginTop: 60
+        marginTop: 10
     },
     resultbtn: {
         fontSize: 30,
@@ -130,7 +160,7 @@ const styles = StyleSheet.create({
         width: 300,
         textAlign: "center",
         fontWeight: "bold",
-        marginBottom: 60
+        marginBottom: 20
     },
     result: {
         color: "#c40a0d",
